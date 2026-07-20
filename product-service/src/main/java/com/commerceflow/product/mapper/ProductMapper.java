@@ -2,6 +2,7 @@ package com.commerceflow.product.mapper;
 
 import com.commerceflow.product.dto.request.CreateProductRequest;
 import com.commerceflow.product.dto.response.ProductResponse;
+import com.commerceflow.product.dto.response.ProductSummaryResponse;
 import com.commerceflow.product.entity.Product;
 import com.commerceflow.product.enums.ProductStatus;
 import org.springframework.stereotype.Component;
@@ -39,5 +40,9 @@ public class ProductMapper {
                 .sellerId(product.getSellerId())
                 .imageUrls(List.of())   // temporary
                 .build();
+    }
+
+    public ProductSummaryResponse toProductSummary(Product product) {
+        return new ProductSummaryResponse(product.getId(), product.getName(), product.getPrice(), product.getStatus());
     }
 }
