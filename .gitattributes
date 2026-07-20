@@ -1,0 +1,3 @@
+# Maven wrapper line endings (kept per service)
+**/mvnw text eol=lf
+*.cmd text eol=crlf
