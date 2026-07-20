@@ -6,7 +6,7 @@ spring:
     name: user-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/commerceflow_user?options=-c%20timezone=UTC
+    url: jdbc:postgresql://localhost:5432/commerceflow_user?connectionTimeZone=UTC
     username: postgres
     password: root
     driver-class-name: org.postgresql.Driver

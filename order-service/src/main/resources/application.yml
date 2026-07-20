@@ -6,7 +6,7 @@ spring:
     name: order-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/commerceflow_order?options=-c%20timezone=UTC
+    url: jdbc:postgresql://localhost:5432/commerceflow_order?connectionTimeZone=UTC
     username: postgres
     password: root
     driver-class-name: org.postgresql.Driver
