@@ -48,8 +48,10 @@ public class Order {
     }
 
     public void addItem(OrderItem item) {
-        item.setOrder(this);
+        item.assignOrder(this);
         orderItems.add(item);
+        totalAmount = totalAmount.add(item.getSubtotal());
+        updatedAt = Instant.now();
     }
 
     public void initializeForCreation() {

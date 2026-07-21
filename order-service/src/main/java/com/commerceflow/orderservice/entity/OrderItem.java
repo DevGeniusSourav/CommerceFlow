@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "order_items")
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderItem {
 
@@ -30,20 +29,32 @@ public class OrderItem {
     @JoinColumn(name = "order_id")
     private Order order;
 
-    @Builder
-    private OrderItem(
-            String productName,
+    void assignOrder(Order order) {
+        this.order = order;
+    }
+
+    public static OrderItem create(
             Long productId,
+            String productName,
+            BigDecimal unitPrice,
+            Integer quantity
+    ){
+        BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(quantity));
+        return new OrderItem(productId, productName, unitPrice, quantity, subtotal);
+    }
+
+    @Builder(access = AccessLevel.PRIVATE)
+    private OrderItem(
+            Long productId,
+            String productName,
             BigDecimal unitPrice,
             Integer quantity,
-            BigDecimal subtotal,
-            Order order
+            BigDecimal subtotal
     ){
-        this.productName = productName;
         this.productId = productId;
+        this.productName = productName;
         this.unitPrice = unitPrice;
         this.quantity = quantity;
         this.subtotal = subtotal;
-        this.order = order;
     }
 }

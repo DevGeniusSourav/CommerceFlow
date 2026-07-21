@@ -23,18 +23,15 @@ public class OrderMapper {
                 .status(order.getStatus()).build();
     }
 
-    public Order toOrder(CreateOrderRequest orderRequest) {
-        Order order = Order.create(orderRequest.getCustomerId());
-
-        orderRequest.getItems().forEach(item -> order.addItem(toOrderItem(item)));
-
-        return order;
-    }
-
-    private OrderItem toOrderItem(OrderItemRequest orderItemRequest) {
-        return OrderItem.builder()
-                .productId(orderItemRequest.getProductId())
-                .quantity(orderItemRequest.getQuantity())
-                .build();
-    }
+//    public Order toOrder(CreateOrderRequest orderRequest) {
+//        Order order = Order.create(orderRequest.getCustomerId());
+//
+//        orderRequest.getItems().forEach(item -> order.addItem(toOrderItem(item)));
+//
+//        return order;
+//    }
+//
+//    private OrderItem toOrderItem(OrderItemRequest orderItemRequest) {
+//        return OrderItem.create(orderItemRequest.getProductId(), orderItemRequest.getQuantity());
+//    }
 }
