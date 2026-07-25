@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.Instant;
 import java.util.Map;
@@ -15,7 +16,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ProductUnavailableException.class)
     public ResponseEntity<ApiError> handleProductUnavailableException(ProductUnavailableException e, HttpServletRequest request) {
+        return buildApiError(e.getMessage(), request, HttpStatus.BAD_REQUEST, null);
+    }
+
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ResponseEntity<ApiError> handleProductNotFoundException(ProductNotFoundException e, HttpServletRequest request) {
         return buildApiError(e.getMessage(), request, HttpStatus.NOT_FOUND, null);
+    }
+
+    @ExceptionHandler(ProductServiceUnavailableException.class)
+    public ResponseEntity<ApiError> handleProductServiceUnavailableException(ProductServiceUnavailableException e, HttpServletRequest request) {
+        return buildApiError(e.getMessage(), request, HttpStatus.SERVICE_UNAVAILABLE, null);
     }
 
     private static ResponseEntity<ApiError> buildApiError(String message, HttpServletRequest request, HttpStatus status, Map<String, String> errors) {
