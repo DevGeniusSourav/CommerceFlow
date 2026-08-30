@@ -1,0 +1,84 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: payment-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/commerceflow_payment?connectionTimeZone=UTC
+    username: postgres
+    password: root
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+    show-sql: true
+
+    properties:
+      hibernate:
+        format_sql: true
+
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+    io.github.resilience4j.retry: DEBUG
+    io.github.resilience4j.circuitbreaker: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level [%X{correlationId}] %logger - %msg%n"
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+
+#resilience4j:
+#  retry:
+#    instances:
+#      productService:
+#        maxAttempts: 3
+#        waitDuration: 1s
+#        enableExponentialBackoff: true
+#        exponentialBackoffMultiplier: 2
+#
+#        retryExceptions:
+#          - org.springframework.web.client.ResourceAccessException
+#          - org.springframework.web.client.HttpServerErrorException
+#          - com.commerceflow.orderservice.exception.ProductServiceUnavailableException
+#
+#        ignoreExceptions:
+#          - com.commerceflow.orderservice.exception.ProductNotFoundException
+#  circuitbreaker:
+#    instances:
+#      productService:
+#        slidingWindowType: COUNT_BASED
+#        slidingWindowSize: 10
+#        minimumNumberOfCalls: 5
+#        failureRateThreshold: 50
+#        waitDurationInOpenState: 30s
+#        permittedNumberOfCallsInHalfOpenState: 3
+#        automaticTransitionFromOpenToHalfOpenEnabled: true
+#        registerHealthIndicator: true
+#        ignoreExceptions:
+#          - com.commerceflow.orderservice.exception.ProductNotFoundException
+#
+#      inventoryService:
+#        slidingWindowType: COUNT_BASED
+#        slidingWindowSize: 10
+#        minimumNumberOfCalls: 5
+#        failureRateThreshold: 50
+#        waitDurationInOpenState: 30s
+#        permittedNumberOfCallsInHalfOpenState: 3
+#        automaticTransitionFromOpenToHalfOpenEnabled: true
+#        registerHealthIndicator: true
+#        ignoreExceptions:
+#          - com.commerceflow.orderservice.exception.InsufficientInventoryException
