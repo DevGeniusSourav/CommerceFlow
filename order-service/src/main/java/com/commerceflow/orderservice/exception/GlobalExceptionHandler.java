@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.Instant;
 import java.util.Map;
@@ -27,6 +26,45 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ProductServiceUnavailableException.class)
     public ResponseEntity<ApiError> handleProductServiceUnavailableException(ProductServiceUnavailableException e, HttpServletRequest request) {
         return buildApiError(e.getMessage(), request, HttpStatus.SERVICE_UNAVAILABLE, null);
+    }
+
+    @ExceptionHandler(InsufficientInventoryException.class)
+    public ResponseEntity<ApiError> handleInsufficientInventoryException(InsufficientInventoryException e, HttpServletRequest request) {
+        Map<String, String> details = (e.getProductId() != null && e.getRequestedQuantity() != null)
+                ? Map.of(
+                "productId", String.valueOf(e.getProductId()),
+                "requestedQuantity", String.valueOf(e.getRequestedQuantity())
+        )
+                : null;
+
+        return buildApiError(e.getMessage(), request, HttpStatus.CONFLICT, details);
+    }
+
+    @ExceptionHandler(InventoryServiceUnavailableException.class)
+    public ResponseEntity<ApiError> handleInventoryServiceUnavailableException(
+            InventoryServiceUnavailableException e, HttpServletRequest request) {
+        return buildApiError(e.getMessage(), request, HttpStatus.SERVICE_UNAVAILABLE, null);
+    }
+
+    @ExceptionHandler(PaymentFailedException.class)
+    public ResponseEntity<ApiError> handlePaymentFailedException(PaymentFailedException e, HttpServletRequest request) {
+        return buildApiError(e.getMessage(), request, HttpStatus.CONFLICT, null);
+    }
+
+    @ExceptionHandler(PaymentServiceUnavailableException.class)
+    public ResponseEntity<ApiError> handlePaymentServiceUnavailableException(
+            PaymentServiceUnavailableException e, HttpServletRequest request) {
+        return buildApiError(e.getMessage(), request, HttpStatus.SERVICE_UNAVAILABLE, null);
+    }
+
+    @ExceptionHandler(InvalidOrderStateException.class)
+    public ResponseEntity<ApiError> handleInvalidOrderStateException(InvalidOrderStateException e, HttpServletRequest request) {
+        return buildApiError(e.getMessage(), request, HttpStatus.CONFLICT, null);
+    }
+
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<ApiError> handleOrderNotFoundException(OrderNotFoundException e, HttpServletRequest request) {
+        return buildApiError(e.getMessage(), request, HttpStatus.NOT_FOUND, null);
     }
 
     private static ResponseEntity<ApiError> buildApiError(String message, HttpServletRequest request, HttpStatus status, Map<String, String> errors) {

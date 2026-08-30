@@ -1,6 +1,7 @@
 package com.commerceflow.orderservice.entity;
 
 import com.commerceflow.orderservice.enums.OrderStatus;
+import com.commerceflow.orderservice.exception.InvalidOrderStateException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -58,6 +59,30 @@ public class Order {
         this.status = OrderStatus.PENDING;
         this.totalAmount = BigDecimal.ZERO;
         this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+    }
+
+    public void markPaid() {
+        if (status != OrderStatus.PENDING_PAYMENT) {
+            throw new InvalidOrderStateException(status, OrderStatus.PAID);
+        }
+
+        this.status = OrderStatus.PAID;
+        this.updatedAt = Instant.now();
+    }
+
+    public void moveToPendingPayment() {
+        this.status = OrderStatus.PENDING_PAYMENT;
+        this.updatedAt = Instant.now();
+    }
+
+    public void markCompensationPending() {
+        this.status = OrderStatus.COMPENSATION_PENDING;
+        this.updatedAt = Instant.now();
+    }
+
+    public void cancel() {
+        this.status = OrderStatus.CANCELLED;
         this.updatedAt = Instant.now();
     }
 

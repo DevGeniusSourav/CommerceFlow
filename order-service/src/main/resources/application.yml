@@ -63,14 +63,34 @@ resilience4j:
         slidingWindowType: COUNT_BASED
         slidingWindowSize: 10
         minimumNumberOfCalls: 5
-
         failureRateThreshold: 50
-
         waitDurationInOpenState: 30s
-
         permittedNumberOfCallsInHalfOpenState: 3
-
         automaticTransitionFromOpenToHalfOpenEnabled: true
-
         registerHealthIndicator: true
+        ignoreExceptions:
+          - com.commerceflow.orderservice.exception.ProductNotFoundException
 
+      inventoryService:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        registerHealthIndicator: true
+        ignoreExceptions:
+          - com.commerceflow.orderservice.exception.InsufficientInventoryException
+
+      paymentService:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        registerHealthIndicator: true
+        ignoreExceptions:
+          - com.commerceflow.orderservice.exception.PaymentFailedException

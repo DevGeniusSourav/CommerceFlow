@@ -5,6 +5,8 @@ public enum OrderStatus {
 
     PENDING_PAYMENT,
 
+    COMPENSATION_PENDING,
+
     PAID,
 
     SHIPPED,

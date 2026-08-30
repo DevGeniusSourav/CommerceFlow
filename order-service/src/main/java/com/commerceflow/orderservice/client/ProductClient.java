@@ -7,10 +7,13 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 
 @Component
 public class ProductClient {
+
     private final RestClient restClient;
 
     public ProductClient(RestClient.Builder restClientBuilder) {
@@ -19,15 +22,10 @@ public class ProductClient {
                 .build();
     }
 
-    @CircuitBreaker(
-            name = "productService",
-            fallbackMethod = "productServiceUnavailable"
-    )
+    @CircuitBreaker(name = "productService", fallbackMethod = "productServiceUnavailable")
     @Retry(name = "productService")
     public ProductSummaryResponse getProduct(Long productId) {
-
         try {
-
             return restClient
                     .get()
                     .uri("/api/v1/internal/products/{id}", productId)
@@ -35,15 +33,17 @@ public class ProductClient {
                     .body(ProductSummaryResponse.class);
 
         } catch (HttpClientErrorException.NotFound ex) {
-
             throw new ProductNotFoundException(productId);
 
-        } catch (IllegalStateException ex){
+        } catch (HttpServerErrorException | ResourceAccessException ex) {
             throw new ProductServiceUnavailableException();
         }
     }
 
     private ProductSummaryResponse productServiceUnavailable(Long productId, Exception exception) {
+        if (exception instanceof ProductNotFoundException) {
+            throw (ProductNotFoundException) exception;
+        }
         throw new ProductServiceUnavailableException();
     }
 }
