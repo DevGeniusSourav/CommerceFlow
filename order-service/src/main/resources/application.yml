@@ -22,6 +22,9 @@ spring:
       hibernate:
         format_sql: true
 
+  kafka:
+    bootstrap-servers: localhost:9092
+
 
 logging:
   level:

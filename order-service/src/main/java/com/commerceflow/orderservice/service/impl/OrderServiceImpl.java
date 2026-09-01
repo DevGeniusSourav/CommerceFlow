@@ -3,11 +3,7 @@ package com.commerceflow.orderservice.service.impl;
 import com.commerceflow.orderservice.client.InventoryClient;
 import com.commerceflow.orderservice.client.PaymentClient;
 import com.commerceflow.orderservice.client.ProductClient;
-import com.commerceflow.orderservice.dto.request.CreateOrderRequest;
-import com.commerceflow.orderservice.dto.request.CreatePaymentRequest;
-import com.commerceflow.orderservice.dto.request.OrderItemRequest;
-import com.commerceflow.orderservice.dto.request.ReserveInventoryItemRequest;
-import com.commerceflow.orderservice.dto.request.ReserveInventoryRequest;
+import com.commerceflow.orderservice.dto.request.*;
 import com.commerceflow.orderservice.dto.response.OrderResponse;
 import com.commerceflow.orderservice.dto.response.PaymentResponse;
 import com.commerceflow.orderservice.dto.response.ProductSummaryResponse;
@@ -22,7 +18,10 @@ import com.commerceflow.orderservice.exception.PaymentFailedException;
 import com.commerceflow.orderservice.exception.ProductUnavailableException;
 import com.commerceflow.orderservice.mapper.OrderMapper;
 import com.commerceflow.orderservice.repository.OrderRepository;
+import com.commerceflow.orderservice.repository.OutboxEventRepository;
 import com.commerceflow.orderservice.service.OrderService;
+import com.commerceflow.orderservice.service.OutboxService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +39,11 @@ public class OrderServiceImpl implements OrderService {
     private final InventoryClient inventoryClient;
 
     private final PaymentClient paymentClient;
+
+    private final OutboxEventRepository outboxEventRepository;
+
+    private final ObjectMapper objectMapper;
+    private final OutboxService outboxService;
 
     @Override
     public OrderResponse createOrder(CreateOrderRequest createOrderRequest) {
@@ -152,9 +156,15 @@ public class OrderServiceImpl implements OrderService {
 
         inventoryClient.confirm(orderId);
 
-        order.markPaid();
+        markOrderPaid(order);
         orderRepository.save(order);
 
         return payment;
+    }
+
+    @Transactional
+    public void markOrderPaid(Order order) {
+        order.markPaid();
+        outboxService.saveOrderPaidEvent(order);
     }
 }
