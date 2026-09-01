@@ -1,6 +1,7 @@
 package com.commerceflow.inventoryservice.controller;
 
 import com.commerceflow.inventoryservice.dto.request.ConfirmInventoryRequest;
+import com.commerceflow.inventoryservice.dto.request.CreateInventoryRequest;
 import com.commerceflow.inventoryservice.dto.request.RestockInventoryRequest;
 import com.commerceflow.inventoryservice.dto.response.InventoryResponse;
 import com.commerceflow.inventoryservice.dto.response.ReservationResponse;
@@ -28,9 +29,9 @@ public class InventoryController {
         return ResponseEntity.ok(inventoryService.getInventories(productId));
     }
 
-    @PostMapping("/confirm")
-    public ResponseEntity<ReservationResponse> confirm(@Valid @RequestBody ConfirmInventoryRequest request) {
-        return ResponseEntity.ok(inventoryService.confirm(request));
+    @PostMapping
+    public ResponseEntity<InventoryResponse> create(@Valid @RequestBody CreateInventoryRequest request) {
+        return ResponseEntity.ok(inventoryService.create(request));
     }
 
     @PostMapping("/restock")
