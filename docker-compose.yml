@@ -1,0 +1,117 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: commerceflow-postgres-pub
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - commerceflow
+
+  kafka:
+    image: apache/kafka:4.3.1
+    container_name: commerceflow-kafka-pub
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_LISTENERS: CONTROLLER://:9093,INTERNAL://:29092,EXTERNAL://:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    networks:
+      - commerceflow
+
+  discovery-server:
+    build:
+      context: ./discovery-server
+    container_name: commerceflow-discovery-pub
+    ports:
+      - "8761:8761"
+    networks:
+      - commerceflow
+
+  gateway-service:
+    build:
+      context: ./gateway-service
+    container_name: commerceflow-gateway-pub
+    ports:
+      - "8080:8080"
+    depends_on:
+      - discovery-server
+    networks:
+      - commerceflow
+
+  user-service:
+    build:
+      context: ./user-service
+    container_name: commerceflow-user-pub
+    depends_on:
+      - postgres
+      - discovery-server
+    networks:
+      - commerceflow
+
+  product-service:
+    build:
+      context: ./product-service
+    container_name: commerceflow-product-pub
+    depends_on:
+      - postgres
+      - discovery-server
+    networks:
+      - commerceflow
+
+  order-service:
+    build:
+      context: ./order-service
+    container_name: commerceflow-order-pub
+    depends_on:
+      - postgres
+      - kafka
+      - discovery-server
+      - product-service
+      - inventory-service
+      - payment-service
+    networks:
+      - commerceflow
+
+  inventory-service:
+    build:
+      context: ./inventory-service
+    container_name: commerceflow-inventory-pub
+    depends_on:
+      - postgres
+      - kafka
+      - discovery-server
+    networks:
+      - commerceflow
+
+  payment-service:
+    build:
+      context: ./payment-service
+    container_name: commerceflow-payment-pub
+    depends_on:
+      - postgres
+      - discovery-server
+    networks:
+      - commerceflow
+
+volumes:
+  postgres-data:
+
+networks:
+  commerceflow:
+    driver: bridge

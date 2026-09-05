@@ -1,12 +1,13 @@
 server:
-  port: 8083
+  port: 8084
 
 spring:
   application:
     name: user-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/commerceflow_user?connectionTimeZone=UTC
+#    url: jdbc:postgresql://localhost:5432/commerceflow_user?connectionTimeZone=UTC
+    url: jdbc:postgresql://postgres:5432/commerceflow_user?connectionTimeZone=UTC
     username: postgres
     password: root
     driver-class-name: org.postgresql.Driver
@@ -30,7 +31,8 @@ logging:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://discovery-server:8761/eureka
+#      defaultZone: http://localhost:8761/eureka
     register-with-eureka: true
     fetch-registry: true
   instance:
