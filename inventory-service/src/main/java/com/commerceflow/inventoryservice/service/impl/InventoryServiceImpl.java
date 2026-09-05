@@ -5,15 +5,19 @@ import com.commerceflow.inventoryservice.dto.response.InventoryResponse;
 import com.commerceflow.inventoryservice.dto.response.ReservationResponse;
 import com.commerceflow.inventoryservice.entity.Inventory;
 import com.commerceflow.inventoryservice.entity.InventoryReservation;
+import com.commerceflow.inventoryservice.entity.ProcessedEvent;
 import com.commerceflow.inventoryservice.enums.ReservationStatus;
 import com.commerceflow.inventoryservice.exception.InsufficientInventoryException;
 import com.commerceflow.inventoryservice.exception.InventoryNotFoundException;
 import com.commerceflow.inventoryservice.exception.InventoryReservationAlreadyExists;
 import com.commerceflow.inventoryservice.exception.InventoryReservationNotFound;
+import com.commerceflow.inventoryservice.kafka.event.PaymentSucceededEvent;
 import com.commerceflow.inventoryservice.mapper.InventoryMapper;
 import com.commerceflow.inventoryservice.repository.InventoryRepository;
 import com.commerceflow.inventoryservice.repository.InventoryReservationRepository;
+import com.commerceflow.inventoryservice.repository.ProcessedEventRepository;
 import com.commerceflow.inventoryservice.service.InventoryService;
+import com.commerceflow.inventoryservice.service.OutboxService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +33,8 @@ public class InventoryServiceImpl implements InventoryService {
     private final InventoryMapper inventoryMapper;
     private final InventoryRepository inventoryRepository;
     private final InventoryReservationRepository inventoryReservationRepository;
+    private final ProcessedEventRepository processedEventRepository;
+    private final OutboxService outboxService;
 
     @Override
     public InventoryResponse create(CreateInventoryRequest request) {
@@ -275,6 +281,24 @@ public class InventoryServiceImpl implements InventoryService {
         inventory.restock(request.getQuantity());
 
         return inventoryMapper.toResponse(inventory);
+    }
+
+    @Transactional
+    public void handlePaymentSucceeded(PaymentSucceededEvent event) {
+
+        if (processedEventRepository.existsById(event.eventId())) {
+            return;
+        }
+
+        confirm(new ConfirmInventoryRequest(event.orderId()));
+
+        processedEventRepository.save(
+                new ProcessedEvent(event.eventId())
+        );
+
+        outboxService.saveInventoryConfirmedEvent(
+                event.orderId()
+        );
     }
 
 }

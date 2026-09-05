@@ -3,11 +3,13 @@ package com.commerceflow.orderservice.service;
 import com.commerceflow.orderservice.kafka.event.OrderPaidEvent;
 import com.commerceflow.orderservice.entity.Order;
 import com.commerceflow.orderservice.entity.OutboxEvent;
+import com.commerceflow.orderservice.kafka.event.PaymentSucceededEvent;
 import com.commerceflow.orderservice.repository.OutboxEventRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -46,6 +48,42 @@ public class OutboxService {
         } catch (JsonProcessingException ex) {
             throw new IllegalStateException(
                     "Failed to create order paid event",
+                    ex
+            );
+        }
+    }
+
+    @Transactional
+    public void savePaymentSucceededEvent(Order order) {
+
+        try {
+            UUID eventId = UUID.randomUUID();
+
+            PaymentSucceededEvent event =
+                    new PaymentSucceededEvent(
+                            eventId,
+                            order.getId(),
+                            order.getCustomerId(),
+                            order.getTotalAmount()
+                    );
+
+            String payload =
+                    objectMapper.writeValueAsString(event);
+
+            OutboxEvent outboxEvent =
+                    OutboxEvent.builder()
+                            .eventId(eventId)
+                            .aggregateType("ORDER")
+                            .aggregateId(order.getId())
+                            .eventType("PAYMENT_SUCCEEDED")
+                            .payload(payload)
+                            .build();
+
+            outboxEventRepository.save(outboxEvent);
+
+        } catch (JsonProcessingException ex) {
+            throw new IllegalStateException(
+                    "Failed to create payment succeeded event",
                     ex
             );
         }

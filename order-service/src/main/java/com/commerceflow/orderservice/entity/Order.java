@@ -63,7 +63,7 @@ public class Order {
     }
 
     public void markPaid() {
-        if (status != OrderStatus.PENDING_PAYMENT) {
+        if (status != OrderStatus.INVENTORY_CONFIRMATION_PENDING) {
             throw new InvalidOrderStateException(status, OrderStatus.PAID);
         }
 
@@ -79,6 +79,15 @@ public class Order {
     public void markCompensationPending() {
         this.status = OrderStatus.COMPENSATION_PENDING;
         this.updatedAt = Instant.now();
+    }
+
+    public void moveToInventoryConfirmationPending() {
+        if (status != OrderStatus.PENDING_PAYMENT) {
+            throw new InvalidOrderStateException(status, OrderStatus.INVENTORY_CONFIRMATION_PENDING);
+        }
+
+        status = OrderStatus.INVENTORY_CONFIRMATION_PENDING;
+        updatedAt = Instant.now();
     }
 
     public void cancel() {

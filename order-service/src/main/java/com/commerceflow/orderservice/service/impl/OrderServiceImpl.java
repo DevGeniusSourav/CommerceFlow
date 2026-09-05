@@ -9,6 +9,7 @@ import com.commerceflow.orderservice.dto.response.PaymentResponse;
 import com.commerceflow.orderservice.dto.response.ProductSummaryResponse;
 import com.commerceflow.orderservice.entity.Order;
 import com.commerceflow.orderservice.entity.OrderItem;
+import com.commerceflow.orderservice.entity.ProcessedEvent;
 import com.commerceflow.orderservice.enums.OrderStatus;
 import com.commerceflow.orderservice.enums.PaymentStatus;
 import com.commerceflow.orderservice.enums.ProductStatus;
@@ -16,12 +17,12 @@ import com.commerceflow.orderservice.exception.InvalidOrderStateException;
 import com.commerceflow.orderservice.exception.OrderNotFoundException;
 import com.commerceflow.orderservice.exception.PaymentFailedException;
 import com.commerceflow.orderservice.exception.ProductUnavailableException;
+import com.commerceflow.orderservice.kafka.event.InventoryConfirmedEvent;
 import com.commerceflow.orderservice.mapper.OrderMapper;
 import com.commerceflow.orderservice.repository.OrderRepository;
-import com.commerceflow.orderservice.repository.OutboxEventRepository;
+import com.commerceflow.orderservice.repository.ProcessedEventRepository;
 import com.commerceflow.orderservice.service.OrderService;
 import com.commerceflow.orderservice.service.OutboxService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,9 +41,8 @@ public class OrderServiceImpl implements OrderService {
 
     private final PaymentClient paymentClient;
 
-    private final OutboxEventRepository outboxEventRepository;
+    private final ProcessedEventRepository processedEventRepository;
 
-    private final ObjectMapper objectMapper;
     private final OutboxService outboxService;
 
     @Override
@@ -96,7 +96,6 @@ public class OrderServiceImpl implements OrderService {
 
             savedOrder.moveToPendingPayment();
             orderRepository.save(savedOrder);
-//            throw new RuntimeException("Failed to reserve order");
             return orderMapper.toResponse(savedOrder);
 
         } catch (RuntimeException ex) {
@@ -108,7 +107,6 @@ public class OrderServiceImpl implements OrderService {
 
                 try {
                     inventoryClient.release(savedOrder.getId());
-//                    throw new RuntimeException("Failed to release order");
 
                     savedOrder.cancel();
                     orderRepository.save(savedOrder);
@@ -154,17 +152,37 @@ public class OrderServiceImpl implements OrderService {
                     "Payment failed for order id: " + orderId + ", status: " + payment.status());
         }
 
-        inventoryClient.confirm(orderId);
-
-        markOrderPaid(order);
-        orderRepository.save(order);
+        markInventoryConfirmationPending(order);
 
         return payment;
     }
 
+    @Override
     @Transactional
-    public void markOrderPaid(Order order) {
+    public void handleInventoryConfirmed(
+            InventoryConfirmedEvent event
+    ) {
+
+        if (processedEventRepository.existsById(event.eventId())) {
+            return;
+        }
+
+        Order order = orderRepository.findById(event.orderId())
+                .orElseThrow(() ->
+                        new OrderNotFoundException(event.orderId())
+                );
+
         order.markPaid();
+
+        processedEventRepository.save(
+                new ProcessedEvent(event.eventId())
+        );
+
         outboxService.saveOrderPaidEvent(order);
+    }
+
+    private void markInventoryConfirmationPending(Order order) {
+        order.moveToInventoryConfirmationPending();
+        outboxService.savePaymentSucceededEvent(order);
     }
 }

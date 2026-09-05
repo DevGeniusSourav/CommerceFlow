@@ -7,7 +7,7 @@ import com.commerceflow.inventoryservice.dto.request.ReserveInventoryRequest;
 import com.commerceflow.inventoryservice.dto.request.RestockInventoryRequest;
 import com.commerceflow.inventoryservice.dto.response.InventoryResponse;
 import com.commerceflow.inventoryservice.dto.response.ReservationResponse;
-import com.commerceflow.inventoryservice.enums.ReservationStatus;
+import com.commerceflow.inventoryservice.kafka.event.PaymentSucceededEvent;
 
 import java.util.List;
 
@@ -24,4 +24,6 @@ public interface InventoryService {
     ReservationResponse confirm(ConfirmInventoryRequest request);
 
     InventoryResponse restock(RestockInventoryRequest request);
+
+    void handlePaymentSucceeded(PaymentSucceededEvent event);
 }

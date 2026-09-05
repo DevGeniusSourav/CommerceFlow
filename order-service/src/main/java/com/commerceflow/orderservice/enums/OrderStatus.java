@@ -7,6 +7,8 @@ public enum OrderStatus {
 
     COMPENSATION_PENDING,
 
+    INVENTORY_CONFIRMATION_PENDING,
+
     PAID,
 
     SHIPPED,
