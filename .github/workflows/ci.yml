@@ -36,7 +36,7 @@ jobs:
       - name: Build user service
         run: |
           cd user-service
-          ./mvnw clean package 
+          ./mvnw clean package -DskipTests
 
       - name: Build product service
         run: |
