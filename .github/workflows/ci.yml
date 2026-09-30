@@ -98,7 +98,7 @@ jobs:
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: root
           EUREKA_CLIENT_ENABLED: false
-          SPRING_KAFKA_LISTENER_AUTO_STARTUP: false
+#          SPRING_KAFKA_LISTENER_AUTO_STARTUP: false
         run: |
           cd inventory-service
           ./mvnw clean package
