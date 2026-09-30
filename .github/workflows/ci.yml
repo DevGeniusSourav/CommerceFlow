@@ -12,7 +12,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: root
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
+
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -23,37 +39,72 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Create databases
+        env:
+          PGPASSWORD: root
+        run: |
+          psql -h localhost -U postgres -d postgres -c "CREATE DATABASE commerceflow_user;"
+          psql -h localhost -U postgres -d postgres -c "CREATE DATABASE commerceflow_product;"
+          psql -h localhost -U postgres -d postgres -c "CREATE DATABASE commerceflow_order;"
+          psql -h localhost -U postgres -d postgres -c "CREATE DATABASE commerceflow_inventory;"
+          psql -h localhost -U postgres -d postgres -c "CREATE DATABASE commerceflow_payment;"
+
       - name: Build discovery service
         run: |
           cd discovery-server
-          ./mvnw clean package 
+          ./mvnw clean package
 
       - name: Build gateway service
         run: |
           cd gateway-service
-          ./mvnw clean package 
+          ./mvnw clean package
 
       - name: Build user service
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/commerceflow_user?options=-c%20TimeZone=Asia/Kolkata
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: root
+          EUREKA_CLIENT_ENABLED: false
         run: |
           cd user-service
-          ./mvnw clean package -DskipTests
+          ./mvnw clean package
 
       - name: Build product service
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/commerceflow_product?options=-c%20TimeZone=Asia/Kolkata
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: root
+          EUREKA_CLIENT_ENABLED: false
         run: |
           cd product-service
-          ./mvnw clean package 
+          ./mvnw clean package
 
       - name: Build order service
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/commerceflow_order?options=-c%20TimeZone=Asia/Kolkata
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: root
+          EUREKA_CLIENT_ENABLED: false
         run: |
           cd order-service
-          ./mvnw clean package 
+          ./mvnw clean package
 
       - name: Build inventory service
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/commerceflow_inventory?options=-c%20TimeZone=Asia/Kolkata
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: root
+          EUREKA_CLIENT_ENABLED: false
         run: |
           cd inventory-service
-          ./mvnw clean package 
+          ./mvnw clean package
 
       - name: Build payment service
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/commerceflow_payment?options=-c%20TimeZone=Asia/Kolkata
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: root
+          EUREKA_CLIENT_ENABLED: false
         run: |
           cd payment-service
-          ./mvnw clean package 
+          ./mvnw clean package
