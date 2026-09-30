@@ -26,34 +26,34 @@ jobs:
       - name: Build discovery service
         run: |
           cd discovery-server
-          ./mvnw clean package -DskipTests
+          ./mvnw clean package 
 
       - name: Build gateway service
         run: |
           cd gateway-service
-          ./mvnw clean package -DskipTests
+          ./mvnw clean package 
 
       - name: Build user service
         run: |
           cd user-service
-          ./mvnw clean package -DskipTests
+          ./mvnw clean package 
 
       - name: Build product service
         run: |
           cd product-service
-          ./mvnw clean package -DskipTests
+          ./mvnw clean package 
 
       - name: Build order service
         run: |
           cd order-service
-          ./mvnw clean package -DskipTests
+          ./mvnw clean package 
 
       - name: Build inventory service
         run: |
           cd inventory-service
-          ./mvnw clean package -DskipTests
+          ./mvnw clean package 
 
       - name: Build payment service
         run: |
           cd payment-service
-          ./mvnw clean package -DskipTests
+          ./mvnw clean package 
