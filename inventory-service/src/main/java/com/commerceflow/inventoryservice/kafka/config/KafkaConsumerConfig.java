@@ -38,6 +38,9 @@ import java.util.Map;
 @Configuration
 public class KafkaConsumerConfig {
 
+    @Value("${spring.kafka.listener.auto-startup:true}")
+    private boolean autoStartup;
+
     private static final Logger log =
             LoggerFactory.getLogger(KafkaConsumerConfig.class);
 
@@ -168,6 +171,7 @@ public class KafkaConsumerConfig {
         factory.setCommonErrorHandler(kafkaErrorHandler);
         factory.getContainerProperties()
                 .setAckMode(ContainerProperties.AckMode.RECORD);
+        factory.setAutoStartup(autoStartup);
         return factory;
     }
 }
