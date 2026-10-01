@@ -92,22 +92,6 @@ jobs:
         run: |
           cd product-service
           ./mvnw clean package
-          
-      - name: Build product Docker image
-        if: github.event_name == 'push'
-        run: |
-          IMAGE_NAME=$(echo "ghcr.io/${{ github.repository_owner }}/commerceflow-product-service" | tr '[:upper:]' '[:lower:]')
-          
-          docker build \
-            -t "$IMAGE_NAME:latest" \
-            ./product-service
-
-      - name: Push product Docker image
-        if: github.event_name == 'push'
-        run: |
-          IMAGE_NAME=$(echo "ghcr.io/${{ github.repository_owner }}/commerceflow-product-service" | tr '[:upper:]' '[:lower:]')
-          
-          docker push "$IMAGE_NAME:latest"
 
       - name: Build order service
         env:
@@ -141,3 +125,47 @@ jobs:
         run: |
           cd payment-service
           ./mvnw clean package
+
+      - name: Build Docker images
+        if: github.event_name == 'push'
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+
+          for SERVICE in \
+            discovery-server \
+            gateway-service \
+            user-service \
+            product-service \
+            order-service \
+            inventory-service \
+            payment-service
+          do
+            IMAGE_NAME="ghcr.io/$OWNER/commerceflow-$SERVICE"
+
+            echo "Building $IMAGE_NAME"
+
+            docker build \
+              -t "$IMAGE_NAME:latest" \
+              "./$SERVICE"
+          done
+
+      - name: Push Docker images
+        if: github.event_name == 'push'
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+
+          for SERVICE in \
+            discovery-server \
+            gateway-service \
+            user-service \
+            product-service \
+            order-service \
+            inventory-service \
+            payment-service
+          do
+            IMAGE_NAME="ghcr.io/$OWNER/commerceflow-$SERVICE"
+
+            echo "Pushing $IMAGE_NAME"
+
+            docker push "$IMAGE_NAME:latest"
+          done
