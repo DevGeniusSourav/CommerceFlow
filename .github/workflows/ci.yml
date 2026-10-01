@@ -96,15 +96,18 @@ jobs:
       - name: Build product Docker image
         if: github.event_name == 'push'
         run: |
+          IMAGE_NAME=$(echo "ghcr.io/${{ github.repository_owner }}/commerceflow-product-service" | tr '[:upper:]' '[:lower:]')
+          
           docker build \
-            -t ghcr.io/${{ github.repository_owner }}/commerceflow-product-service:latest \
+            -t "$IMAGE_NAME:latest" \
             ./product-service
 
       - name: Push product Docker image
         if: github.event_name == 'push'
         run: |
-          docker push \
-            ghcr.io/${{ github.repository_owner }}/commerceflow-product-service:latest
+          IMAGE_NAME=$(echo "ghcr.io/${{ github.repository_owner }}/commerceflow-product-service" | tr '[:upper:]' '[:lower:]')
+          
+          docker push "$IMAGE_NAME:latest"
 
       - name: Build order service
         env:
