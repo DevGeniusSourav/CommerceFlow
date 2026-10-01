@@ -34,7 +34,6 @@ public class OrderEventConsumer {
             containerFactory = "kafkaListenerContainerFactory"
     )
     public void consume(PaymentSucceededEvent event) {
-
         log.info("Received PAYMENT_SUCCEEDED for order: {}", event.orderId());
 
         inventoryService.handlePaymentSucceeded(event);
