@@ -10,6 +10,8 @@ A production-style e-commerce platform built using Spring Boot Microservices.
 - PostgreSQL
 - Kafka (transactional outbox pattern)
 - Docker / Docker Compose
+- Kubernetes (k3s, manifests in `k8s/`)
+- GitHub Actions CI/CD (build + push images to GHCR, deploy to EC2 and k3s)
 
 ## Services
 
@@ -42,3 +44,53 @@ docker compose up -d --build
 ```
 
 All requests should go through the gateway on `localhost:8080`, except User Service which is only reachable directly on `localhost:8084` (no gateway route configured yet).
+
+## Running on Kubernetes (k3s)
+
+Manifests live in `k8s/`. The namespace is `commerceflow`.
+
+### DB configuration: ConfigMap + Secret per service
+
+Each service that connects to PostgreSQL has its datasource split into two parts:
+
+- A **ConfigMap** (`<service>-config.yml`) holding the non-secret datasource values
+  (`SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`), wired into the deployment via `envFrom`.
+- A **Secret** (`<service>-db-secret`) holding `SPRING_DATASOURCE_PASSWORD`, wired in via
+  `env` → `secretKeyRef`.
+
+This applies to `product`, `inventory`, `order`, `payment`, and `user` services.
+
+The secrets are **not** checked into the repo — create them out-of-band before deploying:
+
+```bash
+for SVC in product inventory order payment user; do
+  kubectl create secret generic ${SVC}-db-secret \
+    -n commerceflow \
+    --from-literal=SPRING_DATASOURCE_PASSWORD=root
+done
+```
+
+### Deploy
+
+```bash
+kubectl apply -f k8s/ -n commerceflow
+```
+
+Apply the ConfigMaps (and create the secrets above) before the deployments roll, otherwise
+pods stay in `CreateContainerConfigError` waiting on the missing `configMapRef`/`secretKeyRef`.
+
+The gateway is exposed via a `NodePort` Service and a Traefik `Ingress` (`k8s/gateway-ingres.yml`,
+path `/`). Reach the API through the gateway's NodePort, e.g.:
+
+```bash
+curl http://localhost:<nodeport>/api/v1/products
+```
+
+### CI/CD
+
+`.github/workflows/ci.yml` builds and tests all services against an ephemeral Postgres, and on
+push to `main` pushes images to GHCR. Two deploy jobs then run (both `needs: build`):
+
+- `deploy` — SSHes to the EC2 host and runs `docker compose pull && up -d`.
+- `deploy-kubernetes` — SSHes to the k3s EC2 host, `git pull`s, `kubectl apply -f k8s/`, and waits
+  on `rollout status` for each deployment.
