@@ -192,29 +192,29 @@ jobs:
 
             docker compose ps
 
-    deploy-kubernetes:
-      needs: build
-      if: github.event_name == 'push'
-      runs-on: ubuntu-latest
+  deploy-kubernetes:
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
 
-      steps:
-        - name: Deploy to Kubernetes EC2
-          uses: appleboy/ssh-action@v1.2.2
-          with:
-            host: ${{ secrets.K8S_EC2_HOST }}
-            username: ${{ secrets.EC2_USER }}
-            key: ${{ secrets.EC2_SSH_KEY }}
-            script: |
-              cd ~/CommerceFlow
-              git pull origin main
+    steps:
+      - name: Deploy to Kubernetes EC2
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.K8S_EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/CommerceFlow
+            git pull origin main
 
-              sudo k3s kubectl apply -f k8s/ -n commerceflow
+            sudo k3s kubectl apply -f k8s/ -n commerceflow
 
-              sudo k3s kubectl rollout status deployment/discovery-server -n commerceflow
-              sudo k3s kubectl rollout status deployment/gateway-service -n commerceflow
-              sudo k3s kubectl rollout status deployment/product-service -n commerceflow
-              sudo k3s kubectl rollout status deployment/order-service -n commerceflow
-              sudo k3s kubectl rollout status deployment/inventory-service -n commerceflow
-              sudo k3s kubectl rollout status deployment/payment-service -n commerceflow
+            sudo k3s kubectl rollout status deployment/discovery-server -n commerceflow
+            sudo k3s kubectl rollout status deployment/gateway-service -n commerceflow
+            sudo k3s kubectl rollout status deployment/product-service -n commerceflow
+            sudo k3s kubectl rollout status deployment/order-service -n commerceflow
+            sudo k3s kubectl rollout status deployment/inventory-service -n commerceflow
+            sudo k3s kubectl rollout status deployment/payment-service -n commerceflow
 
-              sudo k3s kubectl get pods -n commerceflow
+            sudo k3s kubectl get pods -n commerceflow
