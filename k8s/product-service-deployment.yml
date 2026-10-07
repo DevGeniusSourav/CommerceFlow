@@ -29,3 +29,10 @@ spec:
                 secretKeyRef:
                   name: product-db-secret
                   key: SPRING_DATASOURCE_PASSWORD
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
