@@ -20,13 +20,15 @@ spec:
           image: ghcr.io/devgeniussourav/commerceflow-order-service:latest
           ports:
             - containerPort: 8082
+          envFrom:
+            - configMapRef:
+                name: order-config
           env:
-            - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://postgres:5432/commerceflow_order?options=-c%20TimeZone=Asia/Kolkata
-            - name: SPRING_DATASOURCE_USERNAME
-              value: postgres
             - name: SPRING_DATASOURCE_PASSWORD
-              value: root
+              valueFrom:
+                secretKeyRef:
+                  name: order-db-secret
+                  key: SPRING_DATASOURCE_PASSWORD
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "kafka:9092"
             - name: SPRING_KAFKA_LISTENER_AUTO_STARTUP

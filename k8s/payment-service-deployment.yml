@@ -20,13 +20,15 @@ spec:
           image: ghcr.io/devgeniussourav/commerceflow-payment-service:latest
           ports:
             - containerPort: 8084
+          envFrom:
+            - configMapRef:
+                name: payment-config
           env:
-            - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://postgres:5432/commerceflow_payment?options=-c%20TimeZone=Asia/Kolkata
-            - name: SPRING_DATASOURCE_USERNAME
-              value: postgres
             - name: SPRING_DATASOURCE_PASSWORD
-              value: root
+              valueFrom:
+                secretKeyRef:
+                  name: payment-db-secret
+                  key: SPRING_DATASOURCE_PASSWORD
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: kafka:9092
             - name: SPRING_KAFKA_LISTENER_AUTO_STARTUP

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: payment-config
+  namespace: commerceflow
+data:
+  SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/commerceflow_payment?options=-c%20TimeZone=Asia/Kolkata
+  SPRING_DATASOURCE_USERNAME: postgres
