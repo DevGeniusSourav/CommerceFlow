@@ -23,3 +23,9 @@ spec:
           envFrom:
             - configMapRef:
                 name: product-config
+          env:
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: product-db-secret
+                  key: SPRING_DATASOURCE_PASSWORD
