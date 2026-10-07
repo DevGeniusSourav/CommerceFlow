@@ -10,7 +10,7 @@ public class ProductServiceApplication {
 
     public static void main(String[] args) {
         TimeZone.setDefault(TimeZone.getTimeZone("Asia/Kolkata"));
-        System.out.println("Test");
+        System.out.println("Test - Kubernetes CD Test");
         SpringApplication.run(ProductServiceApplication.class, args);
     }
 
