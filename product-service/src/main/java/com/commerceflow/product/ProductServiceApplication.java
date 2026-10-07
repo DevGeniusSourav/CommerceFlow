@@ -8,12 +8,9 @@ import java.util.TimeZone;
 @SpringBootApplication
 public class ProductServiceApplication {
 
-    private static final Logger log =
-            LoggerFactory.getLogger(ProductServiceApplication.class);
-
     public static void main(String[] args) {
         TimeZone.setDefault(TimeZone.getTimeZone("Asia/Kolkata"));
-        log.info("Test");
+        System.out.println("Test");
         SpringApplication.run(ProductServiceApplication.class, args);
     }
 
